@@ -78,7 +78,7 @@ def svm_loss_vectorized(W, X, y, reg):
   num_train = X.shape[0]
   scores = X.dot(W)
   correct_scores = np.choose(y, scores.T)
-  print("The shape of correct score is ", correct_scores.shape)
+  # print("The shape of correct score is ", correct_scores.shape)
   scores_minus_correct = scores - np.reshape(correct_scores, (num_train, 1))  
   deltas = np.ones(scores.shape)
   deltas[np.arange(deltas.shape[0]), y] = 0
@@ -107,13 +107,13 @@ def svm_loss_vectorized(W, X, y, reg):
   #############################################################################
   pass
   train_num, dimension = X.shape
-  print("The number of training data is ", train_num, ", the dimension of the data set is ", dimension)
+  # print("The number of training data is ", train_num, ", the dimension of the data set is ", dimension)
   
   margins[margins > 0] = 1
   error_count = np.sum(margins, axis=1)
   margins[np.arange(train_num), y] = -error_count
   dW = X.T.dot(margins)
-  print("The shape of the dW is ", dW.shape)
+  # print("The shape of the dW is ", dW.shape)
   dW /= num_train
   dW += 2 * reg * W
   

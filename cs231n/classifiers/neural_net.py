@@ -68,7 +68,7 @@ class TwoLayerNet(object):
     W1, b1 = self.params['W1'], self.params['b1']
     W2, b2 = self.params['W2'], self.params['b2']
     N, D = X.shape
-
+    C = W2.shape[1]
     # Compute the forward pass
     scores = None
     #############################################################################
@@ -76,7 +76,21 @@ class TwoLayerNet(object):
     # Store the result in the scores variable, which should be an array of      #
     # shape (N, C).                                                             #
     #############################################################################
-    pass
+    # matrix multiplication
+    activation1 = X.dot(W1)
+    activation1 += b1
+    #print("The shape of activation 1 is ", activation1.shape)
+    # activation function ReLU: max(0, x) which threshold the output to zero
+    output1 = np.maximum(activation1, 0)  
+    
+    #same 
+    activation2 = output1.dot(W2)
+    activation2 += b2
+    #print("The shape of activation 2 is ", activation2.shape)
+    scores = activation2
+    self.params['scores'] = scores
+        
+    
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
@@ -94,6 +108,17 @@ class TwoLayerNet(object):
     # classifier loss.                                                          #
     #############################################################################
     pass
+    exp_scores = np.exp(activation2)
+    sum_exp_scores = np.sum(exp_scores, axis=1)
+    #print("The shape of sum of exp scores is ", sum_exp_scores.shape)
+    correct_scores = scores[np.arange(N), y]
+    #print(y)
+    #print("correct scores are", correct_scores)
+    output2 = exp_scores / sum_exp_scores.reshape(N, 1)
+    # print("Output2 is : ", output2)
+    losses = -correct_scores + np.log(sum_exp_scores)
+    loss = np.sum(losses) / N
+    loss += reg * np.sum(W1 ** 2) + reg * np.sum(W2 ** 2)
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
@@ -106,6 +131,37 @@ class TwoLayerNet(object):
     # grads['W1'] should store the gradient on W1, and be a matrix of same size #
     #############################################################################
     pass
+    # For the back propagation of softmax, please read this article if you forget
+    # https://www.ics.uci.edu/~pjsadows/notes.pdf
+    
+    dLoss = 1
+    # print("number of training img is ", N)
+    target = np.zeros((N, C))
+    target[np.arange(N), y] = 1
+    '''
+    print("Target matrix is ", target)
+    print("Output 2 is ", output2)
+    print("-----------------------------------------------")
+    '''
+    dActivation2 = (output2 - target) / N
+    dW2 = (output1.T).dot(dActivation2)
+    dW2 += 2 * reg * W2
+    grads['W2'] = dW2
+    db2 = np.sum(dActivation2, axis=0)
+    grads['b2'] = db2
+    
+    doutput1 = dActivation2.dot(W2.T)
+    dActivation1 = doutput1
+    dActivation1[activation1 <= 0] = 0 
+    dW1 = (X.T).dot(dActivation1)
+    dW1 += 2 * reg * W1 
+    grads['W1'] = dW1
+    db1 = np.sum(dActivation1, axis=0)
+    grads['b1'] = db1
+    
+    
+    
+    
     #############################################################################
     #                              END OF YOUR CODE                             #
     #############################################################################
@@ -150,6 +206,14 @@ class TwoLayerNet(object):
       # them in X_batch and y_batch respectively.                             #
       #########################################################################
       pass
+      # print('-----------------------iteration--------------------------')
+      batch_index = np.random.choice(np.arange(num_train), batch_size)
+      X_batch = X[batch_index, :]
+      y_batch = y[batch_index]
+      #print('X_batch is  ', X_batch)
+      #print('size of y_batch is  ', y_batch.shape)
+    
+     
       #########################################################################
       #                             END OF YOUR CODE                          #
       #########################################################################
@@ -165,6 +229,10 @@ class TwoLayerNet(object):
       # stored in the grads dictionary defined above.                         #
       #########################################################################
       pass
+      self.params['W1'] -= grads['W1'] * learning_rate
+      self.params['b1'] -= grads['b1'] * learning_rate
+      self.params['W2'] -= grads['W2'] * learning_rate
+      self.params['b2'] -= grads['b2'] * learning_rate
       #########################################################################
       #                             END OF YOUR CODE                          #
       #########################################################################
@@ -210,6 +278,14 @@ class TwoLayerNet(object):
     # TODO: Implement this function; it should be VERY simple!                #
     ###########################################################################
     pass
+    W1 = self.params['W1']
+    b1 = self.params['b1']
+    W2 = self.params['W2']
+    b2 = self.params['b2']
+    activation1 = X.dot(W1) + b1
+    output1 = np.maximum(activation1, 0)
+    scores = output1.dot(W2) + b2
+    y_pred = np.argmax(scores, axis=1)
     ###########################################################################
     #                              END OF YOUR CODE                           #
     ###########################################################################

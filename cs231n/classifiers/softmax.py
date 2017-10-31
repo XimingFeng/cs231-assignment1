@@ -96,7 +96,7 @@ def softmax_loss_vectorized(W, X, y, reg):
   temp[np.arange(train_num), y] = -1
   dW = X.T.dot(temp)
   factors = exp_scores / exp_scores_sum.reshape(train_num, 1)
-  print('The factors size is ', factors.shape)
+  # print('The factors size is ', factors.shape)
   dW += X.T.dot(factors)
   dW /= train_num
   dW += 2 * reg * W  
